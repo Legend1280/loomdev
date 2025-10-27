@@ -16,6 +16,11 @@ let linkingMode = false;
 let linkSource = null;
 let tempLine = null;
 
+// Store references for adding edges
+let svgRef = null;
+let gRef = null;
+let simulationRef = null;
+
 /**
  * Initialize Galaxy Editor
  * @param {Object} svg - D3 SVG selection
@@ -24,6 +29,11 @@ let tempLine = null;
  */
 export function initGalaxyEditor(svg, g, simulation) {
   console.log('Initializing Galaxy Editor...');
+  
+  // Store references
+  svgRef = svg;
+  gRef = g;
+  simulationRef = simulation;
   
   // Listen for mode changes
   bus.on('modeChanged', (event) => {
@@ -479,6 +489,9 @@ function createLink(source, target) {
       type
     };
     
+    // Add edge to visualization
+    addEdgeToVisualization(source, target, verb, type);
+    
     // Emit event
     bus.emit('relationCreated', linkData);
     
@@ -566,6 +579,107 @@ function showNodeContextMenu(node, event, g, simulation) {
       d3.select('body').on('click', null);
     });
   }, 100);
+}
+
+/**
+ * Add edge to visualization
+ */
+function addEdgeToVisualization(source, target, verb, type) {
+  if (!gRef || !simulationRef) {
+    console.error('Cannot add edge: missing references');
+    return;
+  }
+  
+  // Find the links group (first g element)
+  let linksGroup = gRef.select('g:first-child');
+  if (linksGroup.empty()) {
+    // Create links group if it doesn't exist
+    linksGroup = gRef.insert('g', ':first-child');
+  }
+  
+  // Create link data
+  const linkData = {
+    source: source,
+    target: target,
+    verb: verb,
+    type: type,
+    strength: 1
+  };
+  
+  // Add line element
+  const line = linksGroup.append('line')
+    .datum(linkData)
+    .attr('stroke', '#3b82f6')
+    .attr('stroke-opacity', 0.6)
+    .attr('stroke-width', 2)
+    .attr('marker-end', 'url(#arrowhead)');
+  
+  // Add label for the verb
+  const labelGroup = linksGroup.append('g')
+    .datum(linkData)
+    .attr('class', 'edge-label');
+  
+  labelGroup.append('rect')
+    .attr('fill', '#181818')
+    .attr('stroke', '#3b82f6')
+    .attr('stroke-width', 1)
+    .attr('rx', 3)
+    .attr('width', verb.length * 7 + 12)
+    .attr('height', 18)
+    .attr('x', -(verb.length * 7 + 12) / 2)
+    .attr('y', -9);
+  
+  labelGroup.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', 4)
+    .attr('fill', '#3b82f6')
+    .attr('font-size', '10px')
+    .attr('font-weight', '500')
+    .text(verb);
+  
+  // Add arrowhead marker if it doesn't exist
+  let defs = svgRef.select('defs');
+  if (defs.empty()) {
+    defs = svgRef.insert('defs', ':first-child');
+  }
+  
+  if (defs.select('#arrowhead').empty()) {
+    defs.append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 20)
+      .attr('refY', 0)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', '#3b82f6');
+  }
+  
+  // Update edge positions on simulation tick
+  const updateEdges = () => {
+    line
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+    
+    labelGroup
+      .attr('transform', d => {
+        const midX = (d.source.x + d.target.x) / 2;
+        const midY = (d.source.y + d.target.y) / 2;
+        return `translate(${midX},${midY})`;
+      });
+  };
+  
+  // Add to existing tick handler
+  simulationRef.on('tick.edges', updateEdges);
+  
+  // Initial update
+  updateEdges();
+  
+  console.log(`Added edge: ${source.label} --[${verb}]--> ${target.label}`);
 }
 
 /**
