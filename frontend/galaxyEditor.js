@@ -346,6 +346,52 @@ function addNodeToVisualization(nodeData, g, simulation) {
     .attr('font-size', '10px')
     .text(nodeData.type);
   
+  // Add "+ Connect" button (appears on hover in dev mode)
+  const connectBtn = newNode.append('g')
+    .attr('class', 'connect-btn')
+    .attr('transform', 'translate(25, -25)')
+    .style('opacity', 0)
+    .style('cursor', 'pointer')
+    .on('click', (event, d) => {
+      event.stopPropagation();
+      if (getDeveloperMode()) {
+        handleNodeClick(d, event);
+      }
+    });
+  
+  // Button background circle
+  connectBtn.append('circle')
+    .attr('r', 12)
+    .attr('fill', '#fad643')
+    .attr('stroke', '#f59e0b')
+    .attr('stroke-width', 2);
+  
+  // Plus icon
+  connectBtn.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', 4)
+    .attr('fill', '#0c0c0c')
+    .attr('font-size', '16px')
+    .attr('font-weight', 'bold')
+    .text('+');
+  
+  // Show/hide button on hover (only in dev mode)
+  newNode.on('mouseenter', function() {
+    if (getDeveloperMode()) {
+      d3.select(this).select('.connect-btn')
+        .transition()
+        .duration(150)
+        .style('opacity', 1);
+    }
+  });
+  
+  newNode.on('mouseleave', function() {
+    d3.select(this).select('.connect-btn')
+      .transition()
+      .duration(150)
+      .style('opacity', 0);
+  });
+  
   // Restart simulation
   simulation.alpha(0.3).restart();
 }
@@ -357,23 +403,62 @@ function handleNodeClick(node, event) {
   if (linkingMode) {
     // Complete link creation
     if (linkSource && linkSource.id !== node.id) {
-      createLink(linkSource, node);
-      linkingMode = false;
-      linkSource = null;
+      // Remove temporary line
       if (tempLine) {
         tempLine.remove();
         tempLine = null;
       }
+      
+      // Remove highlight from source node
+      gRef.selectAll('circle')
+        .filter(d => d && d.id === linkSource.id)
+        .attr('stroke', '#f59e0b')
+        .attr('stroke-width', 2);
+      
+      // Create the actual link
+      createLink(linkSource, node);
+      
+      // Reset linking mode
+      linkingMode = false;
+      linkSource = null;
+      
+      // Remove mouse move listener
+      svgRef.on('mousemove.linking', null);
     }
   } else {
     // Start link creation
     linkingMode = true;
     linkSource = node;
-    console.log(`Link mode: Click another node to create connection from ${node.label}`);
+    console.log(`🔗 Link mode: Move mouse to target node from ${node.label}`);
     
-    // Show visual feedback
-    event.target.setAttribute('stroke', '#fad643');
-    event.target.setAttribute('stroke-width', '3');
+    // Highlight source node
+    gRef.selectAll('circle')
+      .filter(d => d && d.id === node.id)
+      .attr('stroke', '#fad643')
+      .attr('stroke-width', 3);
+    
+    // Create temporary line that follows mouse
+    tempLine = gRef.append('line')
+      .attr('stroke', '#fad643')
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '5,5')
+      .attr('opacity', 0.6)
+      .attr('x1', node.x)
+      .attr('y1', node.y)
+      .attr('x2', node.x)
+      .attr('y2', node.y);
+    
+    // Update line on mouse move
+    svgRef.on('mousemove.linking', function(e) {
+      if (tempLine && linkSource) {
+        const [mx, my] = d3.pointer(e, gRef.node());
+        tempLine
+          .attr('x1', linkSource.x)
+          .attr('y1', linkSource.y)
+          .attr('x2', mx)
+          .attr('y2', my);
+      }
+    });
   }
 }
 
