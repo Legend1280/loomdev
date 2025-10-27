@@ -46,7 +46,34 @@ export function initSystemStatus() {
   // Update status every 5 seconds
   setInterval(checkAllComponents, 5000);
   
+  // Listen for mode changes
+  window.addEventListener('modeChanged', (event) => {
+    const { mode } = event.detail;
+    updateDeveloperModeStatus(mode);
+  });
+  
   console.log('System Status Dashboard initialized');
+}
+
+/**
+ * Update developer mode status indicator
+ */
+function updateDeveloperModeStatus(mode) {
+  const statusItem = document.getElementById('developerModeStatus');
+  if (!statusItem) return;
+  
+  const icon = statusItem.querySelector('.status-icon');
+  const value = statusItem.querySelector('.status-value');
+  
+  if (mode === 'developer') {
+    icon.textContent = '⚙️';
+    value.textContent = 'DEVELOPER';
+    value.style.color = '#fad643';
+  } else {
+    icon.textContent = '👁️';
+    value.textContent = 'VIEWER';
+    value.style.color = '#e6e6e6';
+  }
 }
 
 /**
@@ -123,6 +150,15 @@ function createStatusPanel() {
         <div class="status-item" data-component="panels">
           <span class="status-icon">⏳</span>
           <span class="status-label">Three-Panel Layout</span>
+        </div>
+      </div>
+      
+      <div class="status-section">
+        <div class="status-section-title">Mode</div>
+        <div class="status-item" id="developerModeStatus">
+          <span class="status-icon">👁️</span>
+          <span class="status-label">Mode</span>
+          <span class="status-value">VIEWER</span>
         </div>
       </div>
     </div>

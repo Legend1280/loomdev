@@ -69,6 +69,72 @@
       stroke-width: 2;
     }
     
+    /* DEVELOPER MODE TOGGLE */
+    .dev-mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid rgba(250, 214, 67, 0.3);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    
+    .dev-mode-toggle:hover {
+      background: rgba(250, 214, 67, 0.1);
+      border-color: rgba(250, 214, 67, 0.5);
+    }
+    
+    .dev-mode-toggle.active {
+      background: rgba(250, 214, 67, 0.15);
+      border-color: #fad643;
+    }
+    
+    .dev-mode-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #9a9a9a;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: color 0.15s;
+    }
+    
+    .dev-mode-toggle.active .dev-mode-label {
+      color: #fad643;
+    }
+    
+    .dev-mode-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: #2a2a2a;
+      border-radius: 10px;
+      transition: background 0.15s;
+    }
+    
+    .dev-mode-toggle.active .dev-mode-switch {
+      background: #fad643;
+    }
+    
+    .dev-mode-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #e6e6e6;
+      border-radius: 50%;
+      transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    
+    .dev-mode-toggle.active .dev-mode-switch::after {
+      transform: translateX(16px);
+      background: #0c0c0c;
+    }
+    
     /* UPLOAD BUTTON */
     .upload-btn {
       padding: 8px 16px;
@@ -395,6 +461,12 @@
       </button>
     </div>
     
+    <!-- Developer Mode Toggle -->
+    <button class="dev-mode-toggle" id="devModeToggle" title="Toggle Developer Mode">
+      <span class="dev-mode-label">Developer</span>
+      <div class="dev-mode-switch"></div>
+    </button>
+    
     <!-- Upload Button -->
     <button class="upload-btn">UPLOAD</button>
   </div>
@@ -440,7 +512,7 @@
   <!-- LOAD MODULES -->
   <script type="module">
     // Import event bus first (required by other modules)
-    import { bus, setCurrentDocId } from './eventBus.js';
+    import { bus, setCurrentDocId, toggleDeveloperMode, getDeveloperMode } from './eventBus.js';
     
     // Import core modules
     import { initGalaxyView } from './galaxyView.js';
@@ -595,6 +667,24 @@
         console.log('Search Bar initialized');
       } catch (e) {
         console.error('Search Bar init failed:', e);
+      }
+      
+      // Initialize Developer Mode toggle
+      const devModeToggle = document.getElementById('devModeToggle');
+      if (devModeToggle) {
+        devModeToggle.addEventListener('click', () => {
+          const newMode = toggleDeveloperMode();
+          devModeToggle.classList.toggle('active', newMode);
+          
+          // Update UI based on mode
+          const appEl = document.getElementById('app');
+          if (appEl) {
+            appEl.classList.toggle('developer-mode', newMode);
+          }
+          
+          console.log(`Developer Mode ${newMode ? 'ENABLED' : 'DISABLED'}`);
+        });
+        console.log('Developer Mode toggle initialized');
       }
       
       // Initialize Upload button

@@ -13,7 +13,8 @@ const state = {
   selectedFilters: {
     types: [],
     tags: []
-  }
+  },
+  developerMode: false  // LoomDev: Toggle between view and edit modes
 };
 
 /**
@@ -174,6 +175,34 @@ export function clearFilters() {
   bus.emit('filtersChanged', { filters: getSelectedFilters() });
 }
 
+/**
+ * Get developer mode state
+ * @returns {boolean} Developer mode enabled
+ */
+export function getDeveloperMode() {
+  return state.developerMode;
+}
+
+/**
+ * Set developer mode
+ * @param {boolean} enabled - Enable developer mode
+ */
+export function setDeveloperMode(enabled) {
+  state.developerMode = enabled;
+  bus.emit('modeChanged', { mode: enabled ? 'developer' : 'viewer' });
+  console.log(`Developer Mode: ${enabled ? 'ON' : 'OFF'}`);
+}
+
+/**
+ * Toggle developer mode
+ * @returns {boolean} New developer mode state
+ */
+export function toggleDeveloperMode() {
+  const newMode = !state.developerMode;
+  setDeveloperMode(newMode);
+  return newMode;
+}
+
 // Initialize event listeners for state management
 bus.on('documentLoaded', (event) => {
   const { docId } = event.detail;
@@ -195,6 +224,9 @@ window.getCurrentDocId = getCurrentDocId;
 window.setCurrentDocId = setCurrentDocId;
 window.getCurrentConceptId = getCurrentConceptId;
 window.setCurrentConceptId = setCurrentConceptId;
+window.getDeveloperMode = getDeveloperMode;
+window.setDeveloperMode = setDeveloperMode;
+window.toggleDeveloperMode = toggleDeveloperMode;
 
 console.log('Event Bus initialized');
 
