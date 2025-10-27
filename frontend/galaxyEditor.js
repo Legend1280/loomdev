@@ -430,18 +430,26 @@ function handleNodeClick(node, event) {
     linkingMode = true;
     linkSource = node;
     
-    // Debug: log node coordinates
-    console.log(`🔗 Link mode: Starting from ${node.label}`);
-    console.log(`   Node coordinates: x=${node.x}, y=${node.y}`);
+    // Get actual rendered position from transform
+    const nodeEl = gRef.selectAll('g').filter(d => d && d.id === node.id);
+    const transform = nodeEl.attr('transform');
+    let x, y;
     
-    // If node doesn't have coordinates yet, wait for simulation to set them
-    if (!node.x || !node.y) {
-      console.warn('   Node coordinates not set yet, waiting for simulation...');
-      // Give simulation a moment to initialize positions
-      setTimeout(() => {
-        console.log(`   Updated coordinates: x=${node.x}, y=${node.y}`);
-      }, 100);
+    if (transform) {
+      const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+      if (match) {
+        x = parseFloat(match[1]);
+        y = parseFloat(match[2]);
+      }
     }
+    
+    // Fallback to node.x/y if transform not available
+    if (x === undefined || y === undefined) {
+      x = node.x || 0;
+      y = node.y || 0;
+    }
+    
+    console.log(`🔗 Linking from node ${node.id} at (x=${x}, y=${y})`);
     
     // Highlight source node
     gRef.selectAll('circle')
@@ -455,19 +463,33 @@ function handleNodeClick(node, event) {
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '5,5')
       .attr('opacity', 0.6)
-      .attr('x1', node.x || 0)
-      .attr('y1', node.y || 0)
-      .attr('x2', node.x || 0)
-      .attr('y2', node.y || 0);
+      .attr('x1', x)
+      .attr('y1', y)
+      .attr('x2', x)
+      .attr('y2', y);
     
     // Update line on mouse move
     svgRef.on('mousemove.linking', function(e) {
       if (tempLine && linkSource) {
         const [mx, my] = d3.pointer(e, gRef.node());
-        // Always use the latest node coordinates
+        
+        // Get latest position from transform
+        const nodeEl = gRef.selectAll('g').filter(d => d && d.id === linkSource.id);
+        const transform = nodeEl.attr('transform');
+        let sx = linkSource.x || 0;
+        let sy = linkSource.y || 0;
+        
+        if (transform) {
+          const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          if (match) {
+            sx = parseFloat(match[1]);
+            sy = parseFloat(match[2]);
+          }
+        }
+        
         tempLine
-          .attr('x1', linkSource.x || 0)
-          .attr('y1', linkSource.y || 0)
+          .attr('x1', sx)
+          .attr('y1', sy)
           .attr('x2', mx)
           .attr('y2', my);
       }
@@ -476,9 +498,23 @@ function handleNodeClick(node, event) {
     // Also update line on simulation tick to follow node movement
     const tickHandler = () => {
       if (tempLine && linkSource && linkingMode) {
+        // Get position from transform
+        const nodeEl = gRef.selectAll('g').filter(d => d && d.id === linkSource.id);
+        const transform = nodeEl.attr('transform');
+        let sx = linkSource.x || 0;
+        let sy = linkSource.y || 0;
+        
+        if (transform) {
+          const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          if (match) {
+            sx = parseFloat(match[1]);
+            sy = parseFloat(match[2]);
+          }
+        }
+        
         tempLine
-          .attr('x1', linkSource.x || 0)
-          .attr('y1', linkSource.y || 0);
+          .attr('x1', sx)
+          .attr('y1', sy);
       }
     };
     
