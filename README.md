@@ -1,509 +1,319 @@
-# 🧵 Loom Lite MVP
+# LoomDev v0.1
 
-**Semantic Ontology Navigator with Mind Map Visualization**
+**Ontology-Driven Systems Architecting Environment**
 
-Loom Lite is a document-bound semantic relationship fabric system that enables concept-based navigation, search, and auditability of unstructured text. It extracts micro-ontologies from documents, anchors concepts to verifiable text spans, and provides an intuitive mind map interface for exploration.
-
----
-
-## 🎯 Features
-
-### Core Capabilities
-
-- **📄 Document Ingestion**: Process multiple file types (DOCX, PDF, Markdown, etc.)
-- **🧠 Semantic Extraction**: LLM-powered concept and relationship extraction
-- **🔍 Advanced Search**: Hybrid semantic + keyword search with concept filtering
-- **🗺️ Mind Map Visualization**: Interactive D3.js-based ontology graphs
-- **🎯 Hierarchical Navigation**: Drill down from corpus → document → span
-- **🏷️ Dynamic Filtering**: Filter by concept types, time periods, projects, domains
-- **🔗 N8N Integration**: REST API for workflow automation
-- **📊 Provenance Tracking**: Confidence scores and extraction metadata
-
-### Ontology Features
-
-- **Concept Types**: Metric, Date, Person, Project, Topic, Technology, Feature, Process, Team
-- **Relation Types**: defines, depends_on, causes, precedes, supports, measures, owns, enables
-- **Tag Categories**: time_period, file_type, project, domain
-- **Span Anchoring**: Every concept linked to exact character positions in source text
+LoomDev extends the LoomLite semantic visualization framework into a full-scale **ontology authoring and systems design environment**. It preserves the original **four-panel architecture** (Sidebar, Center Visualization, Surface Viewer, Event Bus backbone), but introduces a **Developer Mode toggle** that converts the visualization canvas from read-only document graphs into **editable system ontologies**.
 
 ---
 
-## 🏗️ Architecture
+## Project Overview
 
-### Technology Stack
-
-- **Backend**: FastAPI (Python 3.11)
-- **Database**: SQLite with FTS5 full-text search
-- **Vector Search**: FAISS (planned)
-- **Frontend**: Vanilla JavaScript + D3.js v7
-- **Visualization**: Force-directed graph with radial layout
-- **Integration**: N8N-compatible REST API
-
-### Data Model
-
-```
-Document → Span → Mention → Concept
-                              ↓
-                          Relation
-                              ↓
-                          Concept
-```
-
-**Core Entities:**
-- `Document`: File metadata and content
-- `Span`: Text segments with character offsets
-- `Concept`: Extracted entities with type and confidence
-- `Relation`: Typed relationships between concepts
-- `Mention`: Links concepts to specific spans
-- `Tag`: Metadata for filtering (time, project, domain)
+**Version**: 0.1 (Concept Phase)  
+**Date**: October 2025  
+**Status**: Conceptual / Pre-Implementation  
+**URL**: *To be deployed: [https://loomdev.vercel.app](https://loomdev.vercel.app)*  
+**Repository**: [https://github.com/Legend1280/loomdev](https://github.com/Legend1280/loomdev)
 
 ---
 
-## 🚀 Quick Start
+## Core Purpose
 
-### Prerequisites
-
-- Python 3.11+
-- SQLite 3
-- Modern web browser (Chrome, Firefox, Safari)
-
-### Installation
-
-```bash
-# Clone the repository
-cd ~/loom-lite-mvp
-
-# Install Python dependencies
-pip3 install fastapi uvicorn
-
-# Initialize database with sample data
-cd backend
-python3.11 sample_data.py
-
-# Start the server
-cd ..
-python3.11 -c "
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
-import uvicorn
-import sys
-sys.path.insert(0, 'backend')
-from main import app
-
-app.mount('/frontend', StaticFiles(directory='frontend'), name='frontend')
-
-@app.get('/', include_in_schema=False)
-def redirect_to_frontend():
-    return RedirectResponse(url='/frontend/index.html')
-
-uvicorn.run(app, host='0.0.0.0', port=8000)
-"
-```
-
-### Access the Application
-
-- **Frontend**: http://localhost:8000/
-- **API Docs**: http://localhost:8000/docs
-- **API Root**: http://localhost:8000/
+LoomDev allows architects to design complex architectures (like the Sovereignty Stack) from first principles — each component defined as an ontological object with inputs, outputs, relations, and attached artifacts (patents, schemas, specifications).
 
 ---
 
-## 📖 Usage Guide
+## Key Features (v0.1)
 
-### Interface Overview
-
-The application has three main panels:
-
-1. **Left Panel - Document Tree**
-   - Browse documents by folder hierarchy
-   - Click any document to load its ontology
-
-2. **Center Panel - Mind Map**
-   - Interactive graph of concepts and relationships
-   - Node size indicates confidence score
-   - Node color indicates concept type
-   - Click nodes to view evidence in text
-   - Drag nodes to rearrange layout
-
-3. **Right Panel - Text Viewer**
-   - Shows document text with highlighted spans
-   - Scrolls to relevant passages when concept is clicked
-   - Displays search results and snippets
-
-### Searching Documents
-
-1. Enter search terms in the top search bar
-2. Click filter chips to narrow by:
-   - Concept types (Metric, Date, Person, Project, etc.)
-   - Time periods (Q4 2024, Q1 2025, etc.)
-   - Projects (Loom Lite, Pillars, etc.)
-   - File types (Business Plan, Technical Spec, etc.)
-3. Press Enter or click "Search"
-4. Results show matched documents with concept highlights
-
-### Exploring Ontologies
-
-1. Click a document in the left panel
-2. Mind map displays all concepts and relationships
-3. Hover over nodes to see details
-4. Click nodes to jump to evidence in text
-5. Drag nodes to customize layout
-
-### Understanding Visualizations
-
-**Node Colors:**
-- 🔵 Blue: Metrics (Revenue Model, KPIs)
-- 🟢 Green: Dates (Q4 2024, deadlines)
-- 🟣 Purple: People (Brady Simmons, teams)
-- 🟠 Orange: Projects (Loom Lite, features)
-- 🔴 Pink: Topics (themes, categories)
-- 🔷 Cyan: Technologies (FastAPI, SQLite)
-
-**Edge Styles:**
-- Solid lines: High confidence (>0.8)
-- Opacity indicates confidence score
-- Labels show relationship type
+- ✅ Four-panel mirrored UI identical to LoomLite
+- ✅ Developer Mode toggle (edit vs. view)
+- ✅ Manual JSON Object & Schema upload
+- ✅ Editable Galaxy View (create nodes, draw connections)
+- ✅ Artifact linking (attach patent PDFs, docs, media)
+- ✅ Ontology export (JSON, GraphML, Mermaid, C4)
+- ✅ Inheritance from LoomLite's Event Bus and visualization stack
 
 ---
 
-## 🔌 N8N Integration
+## Architecture
 
-### API Endpoints
+LoomDev mirrors LoomLite's architecture with developer-centric enhancements:
 
-#### Search Documents
-```bash
-GET /search?q=revenue&types=Metric&tags=project:Loom%20Lite
+### High-Level Architecture
+
 ```
-
-#### Get Document Ontology
-```bash
-GET /doc/{doc_id}/ontology
+┌─────────────────────────────────────────────────────────────┐
+│                        LoomDev Frontend                     │
+│                   (Vercel Deployment)                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │   Toolbar    │  │  Mode Toggle │  │    Upload    │     │
+│  │   (Header)   │  │   Buttons    │  │   Button     │     │
+│  └──────────────┘  └──────────────┘  └──────────────┘     │
+│                                                             │
+│  ┌──────────────┬──────────────────────┬──────────────┐    │
+│  │              │                      │              │    │
+│  │   Sidebar    │   Center Panel       │   Surface    │    │
+│  │              │                      │   Viewer     │    │
+│  │  ┌────────┐  │  ┌────────────────┐ │  ┌────────┐  │    │
+│  │  │ Search │  │  │ Galaxy View    │ │  │Ontology│  │    │
+│  │  └────────┘  │  │ (Editable)     │ │  └────────┘  │    │
+│  │  ┌────────┐  │  ┌────────────────┐ │  ┌────────┐  │    │
+│  │  │ Folders│  │  │ Solar System   │ │  │Artifact│  │    │
+│  │  │ /Schemas│ │  │ (Intra-System) │ │  └────────┘  │    │
+│  │  └────────┘  │  └────────────────┘ │  ┌────────┐  │    │
+│  │  ┌────────┐  │  ┌────────────────┐ │  │Analytics│ │    │
+│  │  │ Status │  │  │ Mind Map       │ │  └────────┘  │    │
+│  │  └────────┘  │  │ (Layer Hier.)  │ │              │    │
+│  │              │  │ (Editable)     │ │              │    │
+│  └──────────────┴──└────────────────┘─┴──────────────┘    │
+│                                                             │
+│                    ┌──────────────┐                         │
+│                    │  Event Bus   │                         │
+│                    │  (Pub/Sub)   │                         │
+│                    └──────────────┘                         │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    LoomDev Backend API                      │
+│                  (Railway Deployment)                       │
+├─────────────────────────────────────────────────────────────┤
+│  FastAPI Server                                              │
+│  ├─ /api/ontology/object     (POST) – Create/Update Object  │
+│  ├─ /api/ontology/relation   (POST) – Create Relation       │
+│  ├─ /api/schema/import       (POST) – Upload Schema         │
+│  ├─ /api/artifact/upload     (POST) – Attach Artifact       │
+│  ├─ /api/system/export       (GET)  – Export Ontology       │
+│  └─ /system/status           (GET)  – Health Check          │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-#### Ingest Documents
-```bash
-POST /api/ingest
-Content-Type: application/json
-
-{
-  "folder_path": "/documents",
-  "files": ["business_plan.docx"]
-}
-```
-
-#### Check Job Status
-```bash
-GET /api/job/{job_id}
-```
-
-#### Extract Concepts from Text
-```bash
-POST /api/extract
-Content-Type: application/json
-
-{
-  "text": "Revenue model based on subscription pricing",
-  "doc_id": "custom_001"
-}
-```
-
-### Example N8N Workflow
-
-See [N8N_Integration_Guide.md](docs/N8N_Integration_Guide.md) for complete workflow examples.
-
-**Basic Document Processing:**
-1. Webhook trigger receives file upload
-2. HTTP Request: POST /api/ingest
-3. Wait node: 5 seconds
-4. HTTP Request: GET /api/job/{job_id}
-5. IF node: Check status == "completed"
-6. HTTP Request: GET /doc/{doc_id}/ontology
-7. Slack notification with results
 
 ---
 
-## 📊 Sample Data
+## Technology Stack
 
-The MVP includes three sample documents:
+### Frontend
 
-### 1. Business Plan (doc_business_plan)
-- **Type**: DOCX
-- **Concepts**: 14 (Revenue Model, Subscription Pricing, Q4 2024, etc.)
-- **Relations**: 10 (defines, measures, depends_on, etc.)
-- **Tags**: Q4 2024, Loom Lite, Financial Planning
+| Technology        | Purpose                                  |
+| ----------------- | ---------------------------------------- |
+| JavaScript (ES6+) | Core logic (no framework)                |
+| D3.js v7          | Interactive and editable graph rendering |
+| HTML5 + CSS3      | Base UI structure                        |
+| Vercel            | Frontend deployment                      |
+| EventBus.js       | Core inter-module pub/sub                |
 
-### 2. Technical Specification (doc_technical_spec)
-- **Type**: PDF
-- **Concepts**: 13 (FastAPI, SQLite, FAISS, Extraction Pipeline, etc.)
-- **Relations**: 7 (part_of, enables, stores, etc.)
-- **Tags**: Technical Specification, Software Architecture
+### Backend
 
-### 3. User Guide (doc_user_guide)
-- **Type**: Markdown
-- **Concepts**: 9 (File Tree, Mind Map, Search Filters, etc.)
-- **Relations**: 5 (part_of, visualizes, contains, etc.)
-- **Tags**: User Guide, Documentation
-
-**Total Statistics:**
-- Documents: 3
-- Concepts: 36
-- Relations: 22
-- Tags: 10
+| Technology             | Purpose                      |
+| ---------------------- | ---------------------------- |
+| FastAPI                | REST API endpoints           |
+| Python 3.11+           | Backend logic, validation    |
+| Railway                | Serverless backend hosting   |
+| JSON Storage (Phase 1) | Ontology persistence         |
+| Optional SQLite        | Prototype relational storage |
 
 ---
 
-## 🛠️ Development
+## Design System
+
+### Visual Framework
+
+Identical to LoomLite: dark minimalist palette, yellow accents, monochrome hierarchy.
+
+| Color         | Hex     | Use                  |
+| ------------- | ------- | -------------------- |
+| Deep Black    | #0a0a0a | Body background      |
+| Panel Grey    | #111111 | Visualization panels |
+| Text          | #e6e6e6 | Primary font         |
+| Accent Yellow | #fad643 | Active highlights    |
+| Edge Input    | #38bdf8 | Data inflow          |
+| Edge Output   | #facc15 | Data outflow         |
+
+---
+
+## Module Documentation
+
+### 1. Event Bus (eventBus.js)
+
+Central communication hub; identical in structure to LoomLite, extended with new events.
+
+| Event            | Payload                  | Purpose                |
+| ---------------- | ------------------------ | ---------------------- |
+| `objectCreated`  | `{ id, data }`           | New component created  |
+| `objectLinked`   | `{ src, dst, relation }` | Connection created     |
+| `schemaImported` | `{ schemaId }`           | JSON schema uploaded   |
+| `artifactLinked` | `{ objectId, file }`     | Patent or asset linked |
+| `modeChanged`    | `{ mode: 'developer' \| 'viewer' }` | UI context toggle |
+
+### 2. Galaxy View (galaxyView.js)
+
+**Purpose**: Editable system topology visualization.  
+**Technology**: D3.js + Force Simulation + Drag Behaviors
+
+**Features**:
+- Click to add new ontology object
+- Drag nodes to reposition
+- Draw directional edges with verbs and I/O metadata
+- Double-click → focus/expand (Semantic Centering retained)
+- Triple-click → recenter on system root
+
+### 3. Solar System View (dualVisualizer.js)
+
+**Purpose**: Visualize internal composition of a system (sub-components).
+
+- Editable micrograph within a parent node
+- Useful for depicting Logos → Authentication Engine → Trust Coefficients
+- Reuses D3 force layout
+
+### 4. Mind Map View (mindMapView.js)
+
+**Purpose**: Display hierarchical roles, layers, or inheritance.
+
+Example: Sovereignty Stack hierarchy (Mirror → Logos → Rita → SAGE → Hermes → Axon/Nabu → Kronos).
+
+- Expand/collapse layers
+- Editable labels, drag-drop reparenting
+
+### 5. Surface Viewer (surfaceViewer.js)
+
+**Purpose**: Metadata & Artifact Interface.
+
+Tabs:
+1. **Ontology** – JSON object schema, editable fields
+2. **Artifact** – Linked PDFs, docs, or references
+3. **Analytics** – Node/edge metrics, dependency graphs
+
+### 6. Sidebar (sidebar.js)
+
+**Purpose**: File, Schema, and Object Management.
+
+- Upload manual JSON object
+- Import schema definitions
+- Organize components into projects (e.g., Sovereignty Stack, Pillars System)
+
+---
+
+## API Integration
+
+| Endpoint                 | Method | Description                              |
+| ------------------------ | ------ | ---------------------------------------- |
+| `/api/ontology/object`   | POST   | Create or update an object               |
+| `/api/ontology/relation` | POST   | Define relation with I/O                 |
+| `/api/schema/import`     | POST   | Import JSON schema                       |
+| `/api/artifact/upload`   | POST   | Attach artifact (PDF, DOCX, image)       |
+| `/api/system/export`     | GET    | Export full ontology (json, graphml, c4) |
+| `/system/status`         | GET    | Health endpoint                          |
+
+---
+
+## Feature Specifications
+
+### Feature 1 – Developer Mode Toggle
+
+- Toolbar switch
+- Changes event context (edit vs. view)
+- Locks out ingestion functions when active
+
+### Feature 2 – Manual Object Upload
+
+- Upload `.json` objects
+- Stored locally and in backend
+- Visualized immediately in Galaxy View
+
+### Feature 3 – Editable Graph Canvas
+
+- Drag-create connections between objects
+- Label edges with verbs and vector fields
+- Add metadata (input/output, trust coefficients)
+
+### Feature 4 – Artifact Linking
+
+- Attach PDFs, patents, specifications to nodes
+- View artifacts in Surface Viewer
+- Link multiple artifacts per object
+
+---
+
+## Development
 
 ### Project Structure
 
 ```
-loom-lite-mvp/
+loomdev/
 ├── backend/
 │   ├── main.py              # FastAPI application
-│   ├── schema.sql           # Database schema
-│   ├── sample_data.py       # Sample data generator
+│   ├── api.py               # API endpoints
+│   ├── models.py            # Data models
 │   └── loom_lite.db         # SQLite database
 ├── frontend/
-│   └── index.html           # Single-page application
+│   ├── index.html           # Main application
+│   ├── eventBus.js          # Event system
+│   ├── galaxyView.js        # Galaxy visualization
+│   ├── dualVisualizer.js    # Solar system view
+│   ├── mindMapView.js       # Mind map view
+│   ├── surfaceViewer.js     # Surface viewer
+│   └── sidebar.js           # Sidebar component
 ├── docs/
-│   └── N8N_Integration_Guide.md
+│   └── screenshots/
 ├── README.md
-└── start.sh                 # Startup script
-```
-
-### Adding New Documents
-
-```python
-# In backend/sample_data.py
-
-SAMPLE_DOCUMENTS.append({
-    "id": "doc_new",
-    "title": "New Document",
-    "path": "/documents/new_doc.pdf",
-    "mime": "application/pdf",
-    "content": "Document text here..."
-})
-
-SAMPLE_ONTOLOGY["doc_new"] = {
-    "concepts": [...],
-    "relations": [...],
-    "mentions": {...},
-    "tags": [...]
-}
-
-# Reinitialize database
-python3.11 sample_data.py
-```
-
-### Customizing Visualization
-
-Edit `frontend/index.html`:
-
-```javascript
-// Adjust force simulation parameters
-const simulation = d3.forceSimulation(concepts)
-  .force('charge', d3.forceManyBody().strength(-800))  // Repulsion
-  .force('center', d3.forceCenter(width / 2, height / 2))
-  .force('collision', d3.forceCollide().radius(60))    // Node spacing
-  .force('link', d3.forceLink(relations)
-    .distance(150)                                      // Edge length
-    .strength(0.5));                                    // Edge stiffness
-```
-
-### Adding Concept Types
-
-1. Update `backend/sample_data.py` concept taxonomy
-2. Add CSS color class in `frontend/index.html`:
-```css
-.type-NewType { fill: #hexcolor; stroke: #hexcolor; }
+├── vercel.json              # Vercel config
+└── railway.json             # Railway config
 ```
 
 ---
 
-## 🔍 API Reference
+## Roadmap
 
-### Core Endpoints
+### Phase 1 (v0.1 - Current)
+- ✅ Duplicate LoomLite codebase
+- ✅ Set up LoomDev repository
+- 🔄 Add Developer Mode toggle
+- 🔄 Implement editable Galaxy View
+- 🔄 Add manual JSON object upload
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/tree` | Get document tree structure |
-| GET | `/tags` | Get all available filter tags |
-| GET | `/concepts` | Get concepts with filtering |
-| GET | `/doc/{id}/ontology` | Get document ontology |
-| GET | `/search` | Search documents and concepts |
-| GET | `/jump` | Jump to specific span in document |
+### Phase 2 (v0.2)
+- [ ] Artifact linking system
+- [ ] Ontology export (JSON, GraphML)
+- [ ] Backend API implementation
+- [ ] Deploy to Vercel/Railway
 
-### N8N Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/ingest` | Start document ingestion job |
-| GET | `/api/job/{id}` | Check job status |
-| POST | `/api/extract` | Extract ontology from text |
-
-### Query Parameters
-
-**Search:**
-- `q`: Search query (required)
-- `types`: Concept types filter (optional)
-- `tags`: Tag filters (optional)
-- `limit`: Max results (default: 10)
-
-**Concepts:**
-- `types`: Concept types filter (optional)
-- `doc_ids`: Document IDs filter (optional)
+### Phase 3 (v0.3+)
+- [ ] Schema validation
+- [ ] Multi-user collaboration
+- [ ] Version control for ontologies
+- [ ] Advanced export formats (C4, Mermaid)
 
 ---
 
-## 🎨 Customization
-
-### Changing Color Scheme
-
-Edit CSS in `frontend/index.html`:
-
-```css
-/* Primary color */
-#go, .facet.active {
-  background: #your-color;
-}
-
-/* Node colors */
-.type-Metric { fill: #your-color; }
-```
-
-### Adjusting Layout
-
-Modify grid template in CSS:
-
-```css
-#main {
-  grid-template-columns: 280px 1fr 400px;  /* left center right */
-}
-```
-
-### Adding Authentication
-
-Add JWT middleware in `backend/main.py`:
-
-```python
-from fastapi.security import HTTPBearer
-
-security = HTTPBearer()
-
-@app.get("/protected")
-def protected_route(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    # Verify token
-    pass
-```
-
----
-
-## 🚧 Roadmap
-
-### Phase 1 (Current MVP)
-- ✅ Basic ontology extraction
-- ✅ Mind map visualization
-- ✅ Semantic search
-- ✅ N8N API integration
-
-### Phase 2 (Next)
-- [ ] LLM-based extraction pipeline
-- [ ] FAISS vector search
-- [ ] Multi-document weaving
-- [ ] PDF text extraction
-- [ ] Authentication & authorization
-
-### Phase 3 (Future)
-- [ ] Governance layer (Rita/SAGE)
-- [ ] Cross-document relationship discovery
-- [ ] Real-time collaboration
-- [ ] Export to Neo4j/GraphDB
-- [ ] Mobile responsive design
-
----
-
-## 🐛 Troubleshooting
-
-### Server won't start
-
-```bash
-# Check if port 8000 is in use
-lsof -i :8000
-
-# Kill existing process
-kill -9 <PID>
-
-# Restart server
-./start.sh
-```
-
-### Database errors
-
-```bash
-# Reinitialize database
-cd backend
-rm loom_lite.db
-python3.11 sample_data.py
-```
-
-### Frontend not loading
-
-```bash
-# Check server logs
-tail -f server.log
-
-# Verify frontend files exist
-ls -la frontend/
-
-# Test API directly
-curl http://localhost:8000/tree
-```
-
-### Empty mind map
-
-- Ensure document has concepts in database
-- Check browser console for JavaScript errors
-- Verify API returns data: `curl http://localhost:8000/doc/{doc_id}/ontology`
-
----
-
-## 📝 License
+## License
 
 MIT License - See LICENSE file for details
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 - Brady Simmons - Founder & Architect
 - Manus AI - Development Assistant
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
+- LoomLite for the foundational architecture
 - D3.js for visualization library
 - FastAPI for backend framework
-- N8N for workflow automation inspiration
-- NotebookLM for mind map design inspiration
 
 ---
 
-## 📞 Support
+## Support
 
 For questions, issues, or feature requests:
-- GitHub Issues: [loom-lite-mvp/issues](https://github.com/your-org/loom-lite-mvp/issues)
-- Email: support@loom-lite.com
-- Documentation: https://docs.loom-lite.com
+- GitHub Issues: [loomdev/issues](https://github.com/Legend1280/loomdev/issues)
+- Repository: https://github.com/Legend1280/loomdev
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** October 22, 2025  
-**Status:** MVP Ready ✅
+**Built on LoomLite v4.0 | Extended for Developer-Centric Ontology Authoring**
 
-
-# Trigger Railway redeploy
-
-# Redeploy trigger: 2025-10-26T01:42:01Z
