@@ -305,8 +305,9 @@ function addNodeToVisualization(nodeData, g, simulation) {
     )
     .on('click', (event, d) => {
       event.stopPropagation();
-      if (getDeveloperMode()) {
-        handleNodeClick(d, event);
+      console.log(`[Node Click] Clicked node ${d.id}, linkingMode: ${linkingMode}`);
+      if (getDeveloperMode() && linkingMode) {
+        completeLinking(d, event);
       }
     })
     .on('contextmenu', (event, d) => {
@@ -354,8 +355,9 @@ function addNodeToVisualization(nodeData, g, simulation) {
     .style('cursor', 'pointer')
     .on('click', (event, d) => {
       event.stopPropagation();
+      console.log(`[+ Button] Clicked + button on ${d.id}`);
       if (getDeveloperMode()) {
-        handleNodeClick(d, event);
+        startLinking(d, event);
       }
     });
   
@@ -397,48 +399,13 @@ function addNodeToVisualization(nodeData, g, simulation) {
 }
 
 /**
- * Handle node click in developer mode
+ * Start linking mode from a node (triggered by + button)
  */
-function handleNodeClick(node, event) {
-  console.log(`[handleNodeClick] Clicked node: ${node.id}, linkingMode: ${linkingMode}`);
-  
-  if (linkingMode) {
-    console.log(`[handleNodeClick] In linking mode, linkSource: ${linkSource?.id}`);
-    // Complete link creation
-    if (linkSource && linkSource.id !== node.id) {
-      console.log(`[handleNodeClick] Completing link from ${linkSource.id} to ${node.id}`);
-      // Remove temporary line
-      if (tempLine) {
-        tempLine.remove();
-        tempLine = null;
-      }
-      
-      // Remove highlight from source node
-      gRef.selectAll('circle')
-        .filter(d => d && d.id === linkSource.id)
-        .attr('stroke', '#f59e0b')
-        .attr('stroke-width', 2);
-      
-      // Create the actual link
-      createLink(linkSource, node);
-      
-      // Reset linking mode
-      linkingMode = false;
-      linkSource = null;
-      
-      // Remove mouse move listener
-      svgRef.on('mousemove.linking', null);
-      
-      console.log(`[handleNodeClick] Link completed and cleaned up`);
-      return;  // Important: exit here to prevent starting new link
-    } else {
-      console.log(`[handleNodeClick] Same node clicked, ignoring`);
-      return;
-    }
-  } else {
-    // Start link creation
-    linkingMode = true;
-    linkSource = node;
+function startLinking(node, event) {
+  console.log(`[startLinking] Starting link from ${node.id}`);
+  // Set linking mode
+  linkingMode = true;
+  linkSource = node;
     
     // Get actual rendered position from transform
     const nodeEl = gRef.selectAll('g').filter(d => d && d.id === node.id);
@@ -685,19 +652,53 @@ function showNodeContextMenu(node, event, g, simulation) {
     .style('top', `${event.clientY}px`)
     .style('background', '#181818')
     .style('border', '1px solid rgba(250, 214, 67, 0.3)')
-    .style('border-radius', '4px')
-    .style('padding', '4px')
+    .style('border-radius', '6px')
+    .style('padding', '6px')
     .style('z-index', '10000')
-    .style('box-shadow', '0 4px 12px rgba(0, 0, 0, 0.5)');
+    .style('min-width', '180px')
+    .style('box-shadow', '0 4px 16px rgba(0, 0, 0, 0.6)');
+  
+  // Add Connection option
+  menu.append('div')
+    .style('padding', '10px 14px')
+    .style('color', '#fad643')
+    .style('font-size', '13px')
+    .style('font-weight', '500')
+    .style('cursor', 'pointer')
+    .style('border-radius', '4px')
+    .style('display', 'flex')
+    .style('align-items', 'center')
+    .style('gap', '10px')
+    .html('⟶ Add Connection')
+    .on('mouseover', function() {
+      d3.select(this).style('background', 'rgba(250, 214, 67, 0.15)');
+    })
+    .on('mouseout', function() {
+      d3.select(this).style('background', 'transparent');
+    })
+    .on('click', () => {
+      console.log('[Context Menu] Starting connection from:', node.label);
+      menu.remove();
+      startLinking(node, event);
+    });
+  
+  // Divider
+  menu.append('div')
+    .style('height', '1px')
+    .style('background', 'rgba(250, 214, 67, 0.2)')
+    .style('margin', '4px 0');
   
   // Edit option
   menu.append('div')
-    .style('padding', '8px 16px')
+    .style('padding', '10px 14px')
     .style('color', '#e6e6e6')
-    .style('font-size', '12px')
+    .style('font-size', '13px')
     .style('cursor', 'pointer')
-    .style('border-radius', '2px')
-    .text('✏️ Edit')
+    .style('border-radius', '4px')
+    .style('display', 'flex')
+    .style('align-items', 'center')
+    .style('gap', '10px')
+    .html('✎ Edit Node')
     .on('mouseover', function() {
       d3.select(this).style('background', 'rgba(250, 214, 67, 0.1)');
     })
@@ -712,12 +713,15 @@ function showNodeContextMenu(node, event, g, simulation) {
   
   // Delete option
   menu.append('div')
-    .style('padding', '8px 16px')
+    .style('padding', '10px 14px')
     .style('color', '#ef4444')
-    .style('font-size', '12px')
+    .style('font-size', '13px')
     .style('cursor', 'pointer')
-    .style('border-radius', '2px')
-    .text('🗑️ Delete')
+    .style('border-radius', '4px')
+    .style('display', 'flex')
+    .style('align-items', 'center')
+    .style('gap', '10px')
+    .html('✕ Delete Node')
     .on('mouseover', function() {
       d3.select(this).style('background', 'rgba(239, 68, 68, 0.1)');
     })
