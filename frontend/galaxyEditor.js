@@ -55,65 +55,31 @@ export function initGalaxyEditor(svg, g, simulation) {
  * Enable editing mode
  */
 function enableEditing(svg, g, simulation) {
-  // Add floating "Add Node" button
-  const container = svg.node().parentElement;
-  
-  // Remove existing button if any
-  const existingBtn = container.querySelector('.add-node-btn');
-  if (existingBtn) existingBtn.remove();
-  
-  const addNodeBtn = document.createElement('button');
-  addNodeBtn.className = 'add-node-btn';
-  addNodeBtn.innerHTML = '+ Add Object';
-  addNodeBtn.style.cssText = `
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    padding: 10px 20px;
-    background: #fad643;
-    border: none;
-    border-radius: 6px;
-    color: #0c0c0c;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(250, 214, 67, 0.3);
-    transition: all 0.15s;
-  `;
-  
-  addNodeBtn.addEventListener('mouseenter', () => {
-    addNodeBtn.style.transform = 'translateY(-2px)';
-    addNodeBtn.style.boxShadow = '0 4px 12px rgba(250, 214, 67, 0.5)';
+  // Add right-click handler on empty canvas
+  svg.on('contextmenu.editor', function(event) {
+    // Check if click is on empty space (not on a node)
+    const target = event.target;
+    const isEmptySpace = target.tagName === 'svg' || 
+                         target.tagName === 'rect' || 
+                         target.classList?.contains('star') ||
+                         (target.tagName === 'circle' && target.getAttribute('class') === 'star');
+    
+    if (isEmptySpace) {
+      event.preventDefault();
+      const [x, y] = d3.pointer(event, g.node());
+      showCanvasContextMenu(event, x, y, g, simulation);
+    }
   });
   
-  addNodeBtn.addEventListener('mouseleave', () => {
-    addNodeBtn.style.transform = 'translateY(0)';
-    addNodeBtn.style.boxShadow = '0 2px 8px rgba(250, 214, 67, 0.3)';
-  });
-  
-  addNodeBtn.addEventListener('click', () => {
-    // Get center of viewport
-    const bbox = svg.node().getBoundingClientRect();
-    const [x, y] = [bbox.width / 2, bbox.height / 2];
-    showAddNodeDialog(x, y, g, simulation);
-  });
-  
-  container.style.position = 'relative';
-  container.appendChild(addNodeBtn);
-  
-  console.log('Editing enabled: Click "+ Add Object" button to create nodes');
+  console.log('Editing enabled: Right-click empty space to add objects');
 }
 
 /**
  * Disable editing mode
  */
 function disableEditing(svg) {
-  // Remove Add Node button
-  const container = svg.node().parentElement;
-  const addNodeBtn = container.querySelector('.add-node-btn');
-  if (addNodeBtn) addNodeBtn.remove();
+  // Remove context menu handler
+  svg.on('contextmenu.editor', null);
   
   // Reset linking state
   linkingMode = false;
@@ -123,6 +89,61 @@ function disableEditing(svg) {
     tempLine = null;
   }
 }
+
+/**
+ * Show context menu for empty canvas
+ */
+function showCanvasContextMenu(event, x, y, g, simulation) {
+  // Remove existing context menu
+  d3.selectAll(".context-menu").remove();
+  
+  const menu = d3.select("body")
+    .append("div")
+    .attr("class", "context-menu")
+    .style("position", "fixed")
+    .style("left", `${event.clientX}px`)
+    .style("top", `${event.clientY}px`)
+    .style("background", "#181818")
+    .style("border", "1px solid rgba(250, 214, 67, 0.3)")
+    .style("border-radius", "6px")
+    .style("padding", "6px")
+    .style("z-index", "10000")
+    .style("min-width", "180px")
+    .style("box-shadow", "0 4px 16px rgba(0, 0, 0, 0.6)");
+  
+  // Add Object option
+  menu.append("div")
+    .style("padding", "10px 14px")
+    .style("color", "#fad643")
+    .style("font-size", "13px")
+    .style("font-weight", "500")
+    .style("cursor", "pointer")
+    .style("border-radius", "4px")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "10px")
+    .html("+ Add Object")
+    .on("mouseover", function() {
+      d3.select(this).style("background", "rgba(250, 214, 67, 0.15)");
+    })
+    .on("mouseout", function() {
+      d3.select(this).style("background", "transparent");
+    })
+    .on("click", () => {
+      console.log("[Canvas Menu] Add Object at:", x, y);
+      menu.remove();
+      showAddNodeDialog(x, y, g, simulation);
+    });
+  
+  // Close menu on click outside
+  setTimeout(() => {
+    d3.select("body").on("click.canvasmenu", () => {
+      menu.remove();
+      d3.select("body").on("click.canvasmenu", null);
+    });
+  }, 100);
+}
+
 
 /**
  * Show dialog to add new node
