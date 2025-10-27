@@ -1,4 +1,8 @@
 {
   "orgId": "team_xVmZL1FQ2J6bnmrmemzNbOTq",
-  "projectId": "prj_4r2JsHbBVPkbQB9NtTf1lGE4DPkj"
+  "projectId": "prj_P3LZNZGHwhY1eXfp9xmvvvBVyAqD",
+  "settings": {
+    "framework": null,
+    "outputDirectory": "frontend"
+  }
 }
