@@ -659,25 +659,37 @@ function addEdgeToVisualization(source, target, verb, type) {
   
   // Update edge positions on simulation tick
   const updateEdges = () => {
+    // Access node coordinates directly
+    const sx = source.x || 0;
+    const sy = source.y || 0;
+    const tx = target.x || 0;
+    const ty = target.y || 0;
+    
     line
-      .attr('x1', d => d.source.x)
-      .attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x)
-      .attr('y2', d => d.target.y);
+      .attr('x1', sx)
+      .attr('y1', sy)
+      .attr('x2', tx)
+      .attr('y2', ty);
+    
+    const midX = (sx + tx) / 2;
+    const midY = (sy + ty) / 2;
     
     labelGroup
-      .attr('transform', d => {
-        const midX = (d.source.x + d.target.x) / 2;
-        const midY = (d.source.y + d.target.y) / 2;
-        return `translate(${midX},${midY})`;
-      });
+      .attr('transform', `translate(${midX},${midY})`);
   };
   
-  // Add to existing tick handler
-  simulationRef.on('tick.edges', updateEdges);
+  // Store update function for this edge
+  linkData.updateFn = updateEdges;
   
-  // Initial update
-  updateEdges();
+  // Add to simulation tick handler
+  const existingTick = simulationRef.on('tick');
+  simulationRef.on('tick', function() {
+    if (existingTick) existingTick.call(this);
+    updateEdges();
+  });
+  
+  // Initial update after a short delay to ensure nodes have positions
+  setTimeout(updateEdges, 100);
   
   console.log(`Added edge: ${source.label} --[${verb}]--> ${target.label}`);
 }
