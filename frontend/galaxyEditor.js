@@ -810,6 +810,14 @@ function addEdgeToVisualization(source, target, verb, type) {
     return;
   }
   
+  // Get actual nodes from simulation with coordinates
+  const nodes = simulationRef.nodes();
+  const sourceNode = nodes.find(n => n.id === source.id) || source;
+  const targetNode = nodes.find(n => n.id === target.id) || target;
+  
+  console.log(`[addEdge] Source: ${sourceNode.id} at (${sourceNode.x}, ${sourceNode.y})`);
+  console.log(`[addEdge] Target: ${targetNode.id} at (${targetNode.x}, ${targetNode.y})`);
+  
   // Find the links group (first g element)
   let linksGroup = gRef.select('g:first-child');
   if (linksGroup.empty()) {
@@ -817,10 +825,10 @@ function addEdgeToVisualization(source, target, verb, type) {
     linksGroup = gRef.insert('g', ':first-child');
   }
   
-  // Create link data
+  // Create link data with actual node references
   const linkData = {
-    source: source,
-    target: target,
+    source: sourceNode,
+    target: targetNode,
     verb: verb,
     type: type,
     strength: 1
