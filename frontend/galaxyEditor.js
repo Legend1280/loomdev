@@ -429,7 +429,19 @@ function handleNodeClick(node, event) {
     // Start link creation
     linkingMode = true;
     linkSource = node;
-    console.log(`🔗 Link mode: Move mouse to target node from ${node.label}`);
+    
+    // Debug: log node coordinates
+    console.log(`🔗 Link mode: Starting from ${node.label}`);
+    console.log(`   Node coordinates: x=${node.x}, y=${node.y}`);
+    
+    // If node doesn't have coordinates yet, wait for simulation to set them
+    if (!node.x || !node.y) {
+      console.warn('   Node coordinates not set yet, waiting for simulation...');
+      // Give simulation a moment to initialize positions
+      setTimeout(() => {
+        console.log(`   Updated coordinates: x=${node.x}, y=${node.y}`);
+      }, 100);
+    }
     
     // Highlight source node
     gRef.selectAll('circle')
@@ -443,21 +455,38 @@ function handleNodeClick(node, event) {
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '5,5')
       .attr('opacity', 0.6)
-      .attr('x1', node.x)
-      .attr('y1', node.y)
-      .attr('x2', node.x)
-      .attr('y2', node.y);
+      .attr('x1', node.x || 0)
+      .attr('y1', node.y || 0)
+      .attr('x2', node.x || 0)
+      .attr('y2', node.y || 0);
     
     // Update line on mouse move
     svgRef.on('mousemove.linking', function(e) {
       if (tempLine && linkSource) {
         const [mx, my] = d3.pointer(e, gRef.node());
+        // Always use the latest node coordinates
         tempLine
-          .attr('x1', linkSource.x)
-          .attr('y1', linkSource.y)
+          .attr('x1', linkSource.x || 0)
+          .attr('y1', linkSource.y || 0)
           .attr('x2', mx)
           .attr('y2', my);
       }
+    });
+    
+    // Also update line on simulation tick to follow node movement
+    const tickHandler = () => {
+      if (tempLine && linkSource && linkingMode) {
+        tempLine
+          .attr('x1', linkSource.x || 0)
+          .attr('y1', linkSource.y || 0);
+      }
+    };
+    
+    // Add to simulation tick
+    const existingTick = simulationRef.on('tick');
+    simulationRef.on('tick', function() {
+      if (existingTick) existingTick.call(this);
+      tickHandler();
     });
   }
 }
