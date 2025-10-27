@@ -516,13 +516,48 @@ function startLinking(node, event) {
       }
     };
     
-    // Add to simulation tick
-    const existingTick = simulationRef.on('tick');
-    simulationRef.on('tick', function() {
-      if (existingTick) existingTick.call(this);
-      tickHandler();
-    });
+  // Add to simulation tick
+  const existingTick = simulationRef.on('tick');
+  simulationRef.on('tick', function() {
+    if (existingTick) existingTick.call(this);
+    tickHandler();
+  });
+}
+
+/**
+ * Complete linking mode (triggered by clicking target node)
+ */
+function completeLinking(node, event) {
+  console.log(`[completeLinking] Completing link to ${node.id}`);
+  
+  if (!linkSource || linkSource.id === node.id) {
+    console.log('[completeLinking] Same node or no source, ignoring');
+    return;
   }
+  
+  // Remove temporary line
+  if (tempLine) {
+    tempLine.remove();
+    tempLine = null;
+  }
+  
+  // Remove highlight from source node
+  gRef.selectAll('circle')
+    .filter(d => d && d.id === linkSource.id)
+    .attr('stroke', '#f59e0b')
+    .attr('stroke-width', 2);
+  
+  // Create the actual link
+  createLink(linkSource, node);
+  
+  // Reset linking mode
+  linkingMode = false;
+  linkSource = null;
+  
+  // Remove mouse move listener
+  svgRef.on('mousemove.linking', null);
+  
+  console.log('[completeLinking] Link completed and cleaned up');
 }
 
 /**
