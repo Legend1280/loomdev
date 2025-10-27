@@ -826,13 +826,55 @@ function addEdgeToVisualization(source, target, verb, type) {
     strength: 1
   };
   
-  // Add line element
+  // Determine color based on relation type
+  const typeColors = {
+    'dataflow': { color: '#ffffff', name: 'white' },      // Data Flow - white
+    'dependency': { color: '#3b82f6', name: 'blue' },     // Dependency - blue
+    'composition': { color: '#f59e0b', name: 'orange' },  // Composition - orange
+    'inheritance': { color: '#a855f7', name: 'purple' },  // Inheritance - purple
+    'association': { color: '#10b981', name: 'green' }    // Association - green
+  };
+  
+  const typeColor = typeColors[type] || typeColors['dataflow'];
+  const color = typeColor.color;
+  const colorName = typeColor.name;
+  
+  // Add line element with animated glow
   const line = linksGroup.append('line')
     .datum(linkData)
-    .attr('stroke', '#3b82f6')
-    .attr('stroke-opacity', 0.6)
+    .attr('stroke', color)
     .attr('stroke-width', 2)
-    .attr('marker-end', 'url(#arrowhead)');
+    .attr('stroke-linecap', 'round')
+    .attr('stroke-dasharray', '6 6')
+    .attr('marker-end', `url(#arrowhead-${colorName})`)
+    .style('filter', `drop-shadow(0 0 6px ${color})`);
+  
+  // Phase 1: Exaggerated initial pulse
+  line
+    .transition()
+    .duration(1000)
+    .ease(d3.easeCubicOut)
+    .attr('stroke-width', 4)
+    .style('filter', `drop-shadow(0 0 14px ${color})`)
+    .styleTween('stroke-dashoffset', () => d3.interpolateString('24', '-24'))
+    .on('end', function() {
+      // Phase 2: Continuous subtle pulse
+      d3.select(this)
+        .transition()
+        .duration(2000)
+        .ease(d3.easeLinear)
+        .attr('stroke-width', 2)
+        .style('filter', `drop-shadow(0 0 4px ${color})`)
+        .styleTween('stroke-dashoffset', () => d3.interpolateString('12', '-12'))
+        .on('end', function repeatPulse() {
+          d3.select(this)
+            .transition()
+            .duration(2000)
+            .ease(d3.easeLinear)
+            .styleTween('stroke-dashoffset', () => d3.interpolateString('12', '-12'))
+            .on('end', repeatPulse);
+        });
+    });
   
   // Add label for the verb
   const labelGroup = linksGroup.append('g')
@@ -841,7 +883,7 @@ function addEdgeToVisualization(source, target, verb, type) {
   
   labelGroup.append('rect')
     .attr('fill', '#181818')
-    .attr('stroke', '#3b82f6')
+    .attr('stroke', color)
     .attr('stroke-width', 1)
     .attr('rx', 3)
     .attr('width', verb.length * 7 + 12)
@@ -852,20 +894,21 @@ function addEdgeToVisualization(source, target, verb, type) {
   labelGroup.append('text')
     .attr('text-anchor', 'middle')
     .attr('dy', 4)
-    .attr('fill', '#3b82f6')
+    .attr('fill', color)
     .attr('font-size', '10px')
     .attr('font-weight', '500')
     .text(verb);
   
-  // Add arrowhead marker if it doesn't exist
+  // Add arrowhead marker for this color if it doesn't exist
   let defs = svgRef.select('defs');
   if (defs.empty()) {
     defs = svgRef.insert('defs', ':first-child');
   }
   
-  if (defs.select('#arrowhead').empty()) {
+  const arrowheadId = `arrowhead-${colorName}`;
+  if (defs.select(`#${arrowheadId}`).empty()) {
     defs.append('marker')
-      .attr('id', 'arrowhead')
+      .attr('id', arrowheadId)
       .attr('viewBox', '0 -5 10 10')
       .attr('refX', 20)
       .attr('refY', 0)
@@ -874,7 +917,8 @@ function addEdgeToVisualization(source, target, verb, type) {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#3b82f6');
+      .attr('fill', color)
+      .style('filter', `drop-shadow(0 0 3px ${color})`);
   }
   
   // Update edge positions on simulation tick
