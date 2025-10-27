@@ -109,7 +109,7 @@ async function fetchAndRenderDocuments(sidebar) {
   
   try {
     // Fetch documents from /tree endpoint
-    const response = await fetch('https://loomlite-production.up.railway.app/tree');
+    const response = await fetch('https://loomdev-production.up.railway.app/tree');
     if (!response.ok) {
       throw new Error(`Failed to fetch documents: ${response.statusText}`);
     }

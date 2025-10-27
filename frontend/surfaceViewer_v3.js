@@ -349,7 +349,7 @@ async function renderDocumentMode(docId) {
   
   try {
     // Fetch document text and spans from backend
-    const response = await fetch(`https://loomlite-production.up.railway.app/doc/${docId}/text`);
+    const response = await fetch(`https://loomdev-production.up.railway.app/doc/${docId}/text`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch document text: ${response.statusText}`);
@@ -562,7 +562,7 @@ function highlightConceptInDocument(conceptId) {
  */
 async function fetchAndDisplayConcept(conceptId) {
   try {
-    const response = await fetch(`https://loomlite-production.up.railway.app/doc/${currentDocId}/ontology`);
+    const response = await fetch(`https://loomdev-production.up.railway.app/doc/${currentDocId}/ontology`);
     const data = await response.json();
     
     const concept = data.concepts.find(c => c.id === conceptId);

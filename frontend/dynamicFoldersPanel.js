@@ -8,7 +8,7 @@
 import { bus } from './eventBus.js';
 
 // Configuration
-const BACKEND_URL = 'https://loomlite-production.up.railway.app';
+const BACKEND_URL = 'https://loomdev-production.up.railway.app';
 
 // Global state
 let folders = [];

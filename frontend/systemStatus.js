@@ -3,7 +3,7 @@
  * Shows real-time status of all Loom Lite v2.0 components
  */
 
-const API_BASE = 'https://loomlite-production.up.railway.app';
+const API_BASE = 'https://loomdev-production.up.railway.app';
 
 let statusPanel = null;
 let isMinimized = true;

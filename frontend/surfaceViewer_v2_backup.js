@@ -360,7 +360,7 @@ async function renderDocumentMode(docId) {
   
   try {
     // Fetch document text from backend
-    const response = await fetch(`https://loomlite-production.up.railway.app/doc/${docId}/text`);
+    const response = await fetch(`https://loomdev-production.up.railway.app/doc/${docId}/text`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch document text: ${response.statusText}`);
