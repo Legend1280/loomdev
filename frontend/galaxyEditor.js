@@ -45,23 +45,67 @@ export function initGalaxyEditor(svg, g, simulation) {
  * Enable editing mode
  */
 function enableEditing(svg, g, simulation) {
-  // Add click handler for creating nodes
-  svg.on('click', function(event) {
-    // Only handle clicks on empty space (not on nodes)
-    if (event.target.tagName === 'svg' || event.target.tagName === 'rect') {
-      const [x, y] = d3.pointer(event, g.node());
-      showAddNodeDialog(x, y, g, simulation);
-    }
+  // Add floating "Add Node" button
+  const container = svg.node().parentElement;
+  
+  // Remove existing button if any
+  const existingBtn = container.querySelector('.add-node-btn');
+  if (existingBtn) existingBtn.remove();
+  
+  const addNodeBtn = document.createElement('button');
+  addNodeBtn.className = 'add-node-btn';
+  addNodeBtn.innerHTML = '+ Add Object';
+  addNodeBtn.style.cssText = `
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 10px 20px;
+    background: #fad643;
+    border: none;
+    border-radius: 6px;
+    color: #0c0c0c;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(250, 214, 67, 0.3);
+    transition: all 0.15s;
+  `;
+  
+  addNodeBtn.addEventListener('mouseenter', () => {
+    addNodeBtn.style.transform = 'translateY(-2px)';
+    addNodeBtn.style.boxShadow = '0 4px 12px rgba(250, 214, 67, 0.5)';
   });
   
-  console.log('Editing enabled: Click empty space to add nodes');
+  addNodeBtn.addEventListener('mouseleave', () => {
+    addNodeBtn.style.transform = 'translateY(0)';
+    addNodeBtn.style.boxShadow = '0 2px 8px rgba(250, 214, 67, 0.3)';
+  });
+  
+  addNodeBtn.addEventListener('click', () => {
+    // Get center of viewport
+    const bbox = svg.node().getBoundingClientRect();
+    const [x, y] = [bbox.width / 2, bbox.height / 2];
+    showAddNodeDialog(x, y, g, simulation);
+  });
+  
+  container.style.position = 'relative';
+  container.appendChild(addNodeBtn);
+  
+  console.log('Editing enabled: Click "+ Add Object" button to create nodes');
 }
 
 /**
  * Disable editing mode
  */
 function disableEditing(svg) {
-  svg.on('click', null);
+  // Remove Add Node button
+  const container = svg.node().parentElement;
+  const addNodeBtn = container.querySelector('.add-node-btn');
+  if (addNodeBtn) addNodeBtn.remove();
+  
+  // Reset linking state
   linkingMode = false;
   linkSource = null;
   if (tempLine) {
@@ -214,11 +258,22 @@ function addNodeToVisualization(nodeData, g, simulation) {
   // Add node to simulation
   simulation.nodes().push(nodeData);
   
-  // Get existing node groups
-  const nodeGroup = g.select('g:last-of-type');
+  // Find or create the nodes container group
+  let nodesGroup = g.select('.nodes-group');
+  if (nodesGroup.empty()) {
+    // If it doesn't exist, select the last g element (which should be the nodes group)
+    nodesGroup = g.selectAll('g').filter(function() {
+      return this.querySelectorAll('circle').length > 0;
+    }).filter(':last-child');
+    
+    // If still not found, just use the main g
+    if (nodesGroup.empty()) {
+      nodesGroup = g;
+    }
+  }
   
   // Create new node group
-  const newNode = nodeGroup.append('g')
+  const newNode = nodesGroup.append('g')
     .datum(nodeData)
     .attr('cursor', 'pointer')
     .attr('transform', `translate(${nodeData.x},${nodeData.y})`)
