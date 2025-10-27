@@ -400,9 +400,13 @@ function addNodeToVisualization(nodeData, g, simulation) {
  * Handle node click in developer mode
  */
 function handleNodeClick(node, event) {
+  console.log(`[handleNodeClick] Clicked node: ${node.id}, linkingMode: ${linkingMode}`);
+  
   if (linkingMode) {
+    console.log(`[handleNodeClick] In linking mode, linkSource: ${linkSource?.id}`);
     // Complete link creation
     if (linkSource && linkSource.id !== node.id) {
+      console.log(`[handleNodeClick] Completing link from ${linkSource.id} to ${node.id}`);
       // Remove temporary line
       if (tempLine) {
         tempLine.remove();
@@ -424,6 +428,12 @@ function handleNodeClick(node, event) {
       
       // Remove mouse move listener
       svgRef.on('mousemove.linking', null);
+      
+      console.log(`[handleNodeClick] Link completed and cleaned up`);
+      return;  // Important: exit here to prevent starting new link
+    } else {
+      console.log(`[handleNodeClick] Same node clicked, ignoring`);
+      return;
     }
   } else {
     // Start link creation
