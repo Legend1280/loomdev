@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loom Lite v2.0 - Ontology Navigator</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: hidden;
+      height: 100vh;
+    }
+    
+    /* TOOLBAR */
+    #toolbar {
+      height: 60px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    #breadcrumbs {
+      flex: 1;
+      font-size: 14px;
+      color: #94a3b8;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .breadcrumb-item {
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .breadcrumb-item:hover {
+      color: #60a5fa;
+    }
+    
+    .breadcrumb-separator {
+      color: #475569;
+    }
+    
+    /* VIEW MODE BUTTONS */
+    #viewModeButtons {
+      background: #334155;
+      padding: 4px;
+      border-radius: 8px;
+      display: flex;
+      gap: 4px;
+    }
+    
+    .view-mode-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .view-mode-btn:hover {
+      background: #475569;
+      color: #e2e8f0;
+    }
+    
+    .view-mode-btn.active {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    /* UPLOAD BUTTON */
+    .upload-btn {
+      padding: 8px 16px;
+      background: #10b981;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .upload-btn:hover {
+      background: #059669;
+    }
+    
+    /* THREE-PANEL LAYOUT */
+    #app {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+    
+    /* LEFT SIDEBAR */
+    #sidebar {
+      width: 16rem;
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+    }
+    
+    #sidebar.collapsed {
+      width: 3.5rem;
+    }
+    
+    /* CENTER PANEL - DUAL VISUALIZER */
+    #center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px;
+      background: #0f172a;
+    }
+    
+    .visualizer-container {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .visualizer-label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #64748b;
+      font-weight: 600;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .visualizer-container svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* VIEW MODE CLASSES */
+    #app.split-mode #visualizer-top,
+    #app.split-mode #visualizer-bottom {
+      display: flex;
+    }
+    
+    #app.solar-only #visualizer-top {
+      flex: 1;
+    }
+    
+    #app.solar-only #visualizer-bottom {
+      display: none;
+    }
+    
+    #app.mind-only #visualizer-top {
+      display: none;
+    }
+    
+    #app.mind-only #visualizer-bottom {
+      flex: 1;
+    }
+    
+    /* RIGHT PANEL - SURFACE VIEWER */
+    #surface-viewer {
+      width: 28rem;
+      background: #1e293b;
+      border-left: 1px solid #334155;
+      overflow-y: auto;
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      #surface-viewer {
+        width: 20rem;
+      }
+    }
+    
+    @media (max-width: 900px) {
+      #app {
+        flex-direction: column;
+      }
+      
+      #sidebar,
+      #surface-viewer {
+        width: 100%;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <div id="breadcrumbs">
+      <span class="breadcrumb-item">Galaxy</span>
+    </div>
+    
+    <div id="viewModeButtons">
+      <button class="view-mode-btn active" data-mode="split">Split</button>
+      <button class="view-mode-btn" data-mode="solar-only">Solar Only</button>
+      <button class="view-mode-btn" data-mode="mind-only">Mind Only</button>
+    </div>
+    
+    <button class="upload-btn">📤 Upload</button>
+  </div>
+  
+  <!-- THREE-PANEL LAYOUT -->
+  <div id="app" class="split-mode">
+    <!-- LEFT SIDEBAR -->
+    <aside id="sidebar"></aside>
+    
+    <!-- CENTER PANEL - DUAL VISUALIZER -->
+    <main id="center">
+      <div id="visualizer-top" class="visualizer-container">
+        <div class="visualizer-label">GALAXY / SOLAR VIEW</div>
+        <svg></svg>
+      </div>
+      <div id="visualizer-bottom" class="visualizer-container">
+        <div class="visualizer-label">MIND MAP</div>
+        <svg></svg>
+      </div>
+    </main>
+    
+    <!-- RIGHT PANEL - SURFACE VIEWER -->
+    <aside id="surface-viewer"></aside>
+  </div>
+  
+  <!-- LOAD MODULES -->
+  <script type="module">
+    import { drawDualVisualizer } from './dualVisualizer.js';
+    import { drawMindMap } from './mindMap.js';
+    import { initSidebar } from './sidebar.js';
+    import { initSurfaceViewer } from './surfaceViewer.js';
+    
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('🚀 Loom Lite v2.0 Core - Initializing...');
+      
+      // Initialize modules
+      initSidebar();
+      initSurfaceViewer();
+      
+      // Set up view mode buttons
+      const viewModeButtons = document.querySelectorAll('.view-mode-btn');
+      const app = document.getElementById('app');
+      
+      viewModeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.dataset.mode;
+          
+          // Update active state
+          viewModeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          // Update app class
+          app.className = mode;
+          
+          console.log(`✅ View mode changed to: ${mode}`);
+        });
+      });
+      
+      // Test with sample document (if available)
+      try {
+        const response = await fetch('https://loomlite-production.up.railway.app/tree');
+        const docs = await response.json();
+        
+        if (docs && docs.length > 0) {
+          console.log(`📚 Found ${docs.length} documents`);
+          
+          // Load first document as demo
+          const firstDoc = docs[0];
+          console.log(`🔍 Loading demo document: ${firstDoc.title}`);
+          await drawDualVisualizer(firstDoc.id);
+        } else {
+          console.log('ℹ️ No documents found - upload a document to get started');
+        }
+      } catch (error) {
+        console.error('❌ Error loading documents:', error);
+      }
+      
+      console.log('✅ Loom Lite v2.0 Core - Ready');
+    });
+  </script>
+</body>
+</html>
+
