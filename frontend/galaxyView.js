@@ -10,6 +10,7 @@
  */
 
 import { bus } from './eventBus.js';
+import { initGalaxyEditor } from './galaxyEditor.js';
 
 const API_BASE = 'https://loomdev-production.up.railway.app';
 
@@ -228,6 +229,9 @@ function createGalaxyVisualization(container) {
   
   // Add gradients
   addGradients(svg);
+  
+  // Initialize editor (enables editing in developer mode)
+  initGalaxyEditor(svg, g, simulation);
   
   // Update positions on tick
   simulation.on('tick', () => {
